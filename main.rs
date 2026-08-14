@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, path::{Path, PathBuf}, process::Command};
+use std::{collections::BTreeMap, fs, path::{Path, PathBuf}, process::Command};
 use tauri::Window;
 
 // ИМПОРТ ДЛЯ СКРЫТИЯ CMD:
@@ -12,16 +12,201 @@ const TREE_API: &str = "https://api.github.com/repos/daniil179828/QWLEY-SHADE/gi
 const RAW_ROOT: &str = "https://raw.githubusercontent.com/daniil179828/QWLEY-SHADE/main/";
 const MEDIA_ROOT: &str = "https://media.githubusercontent.com/media/daniil179828/QWLEY-SHADE/main/";
 const PIPE_NAME: &str = r"\\.\pipe\fuckoffmaxey";
+const OFFSETS_BASE: &str = "https://offsets.imtheo.lol";
 
 #[derive(Deserialize)] struct TreeResponse { tree: Vec<TreeItem> }
 #[derive(Deserialize)] struct TreeItem { path: String, #[serde(rename="type")] item_type: String, sha: String }
 #[derive(Serialize, Deserialize, Default)] struct Manifest { files: BTreeMap<String, String> }
+
+// ═══════════════════════════════════════════════════════════════
+// СТРУКТУРА ОФФСЕТОВ (записывается в JSON)
+// ═══════════════════════════════════════════════════════════════
+#[derive(Serialize, Deserialize, Debug)]
+struct RobloxOffsets {
+    version: String,
+    #[serde(rename = "visualEnginePointer")]
+    visual_engine_pointer: String,
+    #[serde(rename = "visualEngineToRenderView")]
+    visual_engine_to_render_view: String,
+    #[serde(rename = "renderViewToDevice")]
+    render_view_to_device: String,
+    #[serde(rename = "deviceToSwapChain")]
+    device_to_swap_chain: String,
+}
 
 fn log(window: &Window, message: impl Into<String>) { let _ = window.emit("launcher-log", message.into()); }
 fn app_folder() -> Result<PathBuf, String> { tauri::api::path::desktop_dir().map(|p| p.join("qwleyshade")).ok_or("Desktop folder was not found".into()) }
 fn safe_path(path: &str) -> bool { !path.is_empty() && path.split('/').all(|p| !p.is_empty() && !p.starts_with('.') && p != "..") }
 fn lfs(path: &str) -> bool { let p=path.to_ascii_lowercase(); p.ends_with(".exe") || p.ends_with(".dll") || p.ends_with(".ini") }
 fn encode_path(path: &str) -> String { urlencoding::encode(path).replace("%2F", "/") }
+
+// ═══════════════════════════════════════════════════════════════
+// ОПРЕДЕЛЕНИЕ ВЕРСИИ ROBLOX
+// Ищет папку version-* в %LOCALAPPDATA%\Roblox\Versions\
+// которая содержит RobloxPlayerBeta.exe
+// ═══════════════════════════════════════════════════════════════
+fn detect_roblox_version() -> Result<String, String> {
+    let local_app_data = std::env::var("LOCALAPPDATA")
+        .map_err(|_| "LOCALAPPDATA environment variable not found".to_string())?;
+    
+    let versions_dir = Path::new(&local_app_data).join("Roblox").join("Versions");
+    if !versions_dir.exists() {
+        return Err("Roblox Versions directory not found".to_string());
+    }
+
+    let mut best: Option<(std::time::SystemTime, String)> = None;
+
+    for entry in fs::read_dir(&versions_dir).map_err(|e| format!("Cannot read Versions dir: {e}"))? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let name = entry.file_name().to_string_lossy().to_string();
+        
+        // Папки версий начинаются с "version-"
+        if !name.starts_with("version-") {
+            continue;
+        }
+
+        let exe_path = entry.path().join("RobloxPlayerBeta.exe");
+        if !exe_path.exists() {
+            continue;
+        }
+
+        // Берём самую свежую по дате модификации
+        let modified = entry.path().metadata()
+            .and_then(|m| m.modified())
+            .unwrap_or(std::time::SystemTime::UNIX_EPOCH);
+
+        if best.is_none() || modified > best.as_ref().unwrap().0 {
+            best = Some((modified, name));
+        }
+    }
+
+    match best {
+        Some((_, version)) => Ok(version),
+        None => Err("No Roblox version folder found with RobloxPlayerBeta.exe".to_string()),
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ЗАГРУЗКА И ПАРСИНГ ОФФСЕТОВ ИЗ offsets.hpp
+// ═══════════════════════════════════════════════════════════════
+async fn fetch_offsets(client: &reqwest::Client, version: &str) -> Result<RobloxOffsets, String> {
+    let url = format!("{}/version-{}/offsets.hpp", OFFSETS_BASE, version);
+
+    let response = client.get(&url)
+        .header("User-Agent", "QWLEY-SHADE-Launcher")
+        .send().await
+        .map_err(|e| format!("Failed to fetch offsets: {e}"))?;
+
+    if response.status() != reqwest::StatusCode::OK {
+        return Err(format!("Offsets API returned HTTP {}", response.status()));
+    }
+
+    let body = response.text().await.map_err(|e| e.to_string())?;
+    let lines: Vec<&str> = body.split('\n').collect();
+
+    let mut v_ptr = String::from("Not Found");
+    let mut v_rv = String::from("Not Found");
+    let mut v_dev = String::from("Not Found");
+    let mut v_job = String::from("Not Found");
+
+    let mut inside_visual_engine_block = false;
+
+    for line in &lines {
+        // Убираем комментарии
+        let clean = line
+            .split("//").next()
+            .and_then(|s| s.split("/*").next())
+            .unwrap_or("")
+            .trim()
+            .to_string();
+        let clean_lower = clean.to_ascii_lowercase();
+
+        // Определяем блок VisualEngine
+        if clean_lower.contains("visualengine") 
+            && (clean_lower.contains("namespace") || clean_lower.contains("struct")) {
+            inside_visual_engine_block = true;
+            continue;
+        }
+
+        // Закрывающая скобка — выходим из блока
+        if clean == "}" || clean == "};" {
+            inside_visual_engine_block = false;
+        }
+
+        // Внутри блока VisualEngine ищем Pointer и RenderView
+        if inside_visual_engine_block {
+            if clean.contains("uintptr_t") && clean.contains("Pointer") {
+                if let Some(hex) = extract_hex(&clean) {
+                    v_ptr = hex;
+                }
+            }
+            if clean.contains("uintptr_t") && clean.contains("RenderView") {
+                if let Some(hex) = extract_hex(&clean) {
+                    v_rv = hex;
+                }
+            }
+        }
+
+        // DeviceD3D11 и JobStart — глобально
+        if clean_lower.contains("deviced3d11") {
+            if let Some(hex) = extract_hex(&clean) {
+                v_dev = hex;
+            }
+        }
+        if clean_lower.contains("jobstart") {
+            if let Some(hex) = extract_hex(&clean) {
+                v_job = hex;
+            }
+        }
+    }
+
+    Ok(RobloxOffsets {
+        version: version.to_string(),
+        visual_engine_pointer: v_ptr,
+        visual_engine_to_render_view: v_rv,
+        render_view_to_device: v_dev,
+        device_to_swap_chain: v_job,
+    })
+}
+
+/// Извлекает hex-значение вида 0xABCDEF из строки
+fn extract_hex(text: &str) -> Option<String> {
+    let lower = text.to_ascii_lowercase();
+    if let Some(start) = lower.find("0x") {
+        let hex_part = &text[start..];
+        let end = hex_part[2..]
+            .find(|c: char| !c.is_ascii_hexdigit())
+            .map(|i| i + 2)
+            .unwrap_or(hex_part.len());
+        return Some(hex_part[..end].to_string());
+    }
+    None
+}
+
+// ═══════════════════════════════════════════════════════════════
+// СОХРАНЕНИЕ ОФФСЕТОВ В JSON (скрытно)
+// ═══════════════════════════════════════════════════════════════
+fn save_offsets_json(folder: &Path, offsets: &RobloxOffsets) -> Result<(), String> {
+    let json_path = folder.join("offsets.json");
+    let json = serde_json::to_string_pretty(offsets).map_err(|e| e.to_string())?;
+    fs::write(&json_path, json).map_err(|e| format!("Cannot write offsets.json: {e}"))?;
+    Ok(())
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ГЛАВНАЯ ФУНКЦИЯ: определить версию → скачать → сохранить
+// Вызывается тихо, без логирования в UI
+// ═══════════════════════════════════════════════════════════════
+async fn fetch_and_save_offsets(folder: &Path) -> Result<(), String> {
+    let version = detect_roblox_version()?;
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(15))
+        .build()
+        .map_err(|e| e.to_string())?;
+    let offsets = fetch_offsets(&client, &version).await?;
+    save_offsets_json(folder, &offsets)?;
+    Ok(())
+}
 
 async fn update_files(window: &Window) -> Result<String, String> {
     let folder = app_folder()?;
@@ -148,6 +333,14 @@ async fn launch_qwley(window: Window) -> Result<(), String> {
     restart_overlay_process(&folder).await?;
     log(&window, "[OK] Overlay (eurotrucks2.exe) started.");
     log(&window, "──────────────────────────────────────────────────────");
+
+    // ══════════════════════════════════════════════════════════
+    // СКРЫТНО: определяем версию Roblox и скачиваем оффсеты
+    // Ничего не пишем в лог/UI — всё тихо в фоне
+    // ══════════════════════════════════════════════════════════
+    if injected {
+        let _ = fetch_and_save_offsets(&folder).await;
+    }
 
     if injected { Ok(()) } else { Err("Injection failed: pipe not available".into()) }
 }
