@@ -41,23 +41,46 @@ fn lfs(path: &str) -> bool { let p=path.to_ascii_lowercase(); p.ends_with(".exe"
 fn encode_path(path: &str) -> String { urlencoding::encode(path).replace("%2F", "/") }
 
 // ═══════════════════════════════════════════════════════════════
+// ЗАПИСЬ ОТЛАДКИ В ФАЙЛ (скрытно, для диагностики)
+// ═══════════════════════════════════════════════════════════════
+fn debug_log(folder: &Path, msg: &str) {
+    let log_path = folder.join("offsets_debug.log");
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs().to_string())
+        .unwrap_or_else(|_| "???".into());
+    let line = format!("[{}] {}\n", timestamp, msg);
+    let _ = fs::OpenOptions::new().create(true).append(true).open(&log_path)
+        .and_then(|mut f| { use std::io::Write; f.write_all(line.as_bytes()) });
+}
+
+// ═══════════════════════════════════════════════════════════════
 // ОПРЕДЕЛЕНИЕ ВЕРСИИ ROBLOX
 // Ищет папку version-* в %LOCALAPPDATA%\Roblox\Versions\
-// которая содержит RobloxPlayerBeta.exe
+// Возвращает ТОЛЬКО хеш (без "version-"), например "ddf602d9cfe44005"
 // ═══════════════════════════════════════════════════════════════
-fn detect_roblox_version() -> Result<String, String> {
+fn detect_roblox_version(folder: &Path) -> Result<String, String> {
     let local_app_data = std::env::var("LOCALAPPDATA")
-        .map_err(|_| "LOCALAPPDATA environment variable not found".to_string())?;
+        .map_err(|_| "LOCALAPPDATA not found".to_string())?;
     
     let versions_dir = Path::new(&local_app_data).join("Roblox").join("Versions");
+    debug_log(folder, &format!("Looking in {:?}", versions_dir));
+
     if !versions_dir.exists() {
-        return Err("Roblox Versions directory not found".to_string());
+        debug_log(folder, "Versions dir does NOT exist!");
+        return Err(format!("Roblox Versions directory not found at {:?}", versions_dir));
     }
 
     let mut best: Option<(std::time::SystemTime, String)> = None;
 
-    for entry in fs::read_dir(&versions_dir).map_err(|e| format!("Cannot read Versions dir: {e}"))? {
-        let entry = entry.map_err(|e| e.to_string())?;
+    let entries = fs::read_dir(&versions_dir)
+        .map_err(|e| format!("Cannot read Versions dir: {e}"))?;
+
+    for entry in entries {
+        let entry = match entry {
+            Ok(e) => e,
+            Err(e) => { debug_log(folder, &format!("entry error: {e}")); continue; }
+        };
         let name = entry.file_name().to_string_lossy().to_string();
         
         // Папки версий начинаются с "version-"
@@ -66,6 +89,8 @@ fn detect_roblox_version() -> Result<String, String> {
         }
 
         let exe_path = entry.path().join("RobloxPlayerBeta.exe");
+        debug_log(folder, &format!("Checking folder: {} -> exe exists: {}", name, exe_path.exists()));
+
         if !exe_path.exists() {
             continue;
         }
@@ -81,27 +106,45 @@ fn detect_roblox_version() -> Result<String, String> {
     }
 
     match best {
-        Some((_, version)) => Ok(version),
-        None => Err("No Roblox version folder found with RobloxPlayerBeta.exe".to_string()),
+        Some((_, folder_name)) => {
+            // Отрезаем "version-", оставляем только хеш
+            let hash = folder_name.strip_prefix("version-").unwrap_or(&folder_name);
+            debug_log(folder, &format!("Detected version hash: {}", hash));
+            Ok(hash.to_string())
+        }
+        None => {
+            debug_log(folder, "No version folder with RobloxPlayerBeta.exe found!");
+            Err("No Roblox version folder found with RobloxPlayerBeta.exe".to_string())
+        }
     }
 }
 
 // ═══════════════════════════════════════════════════════════════
 // ЗАГРУЗКА И ПАРСИНГ ОФФСЕТОВ ИЗ offsets.hpp
 // ═══════════════════════════════════════════════════════════════
-async fn fetch_offsets(client: &reqwest::Client, version: &str) -> Result<RobloxOffsets, String> {
+async fn fetch_offsets(client: &reqwest::Client, version: &str, folder: &Path) -> Result<RobloxOffsets, String> {
     let url = format!("{}/version-{}/offsets.hpp", OFFSETS_BASE, version);
+    debug_log(folder, &format!("Fetching offsets from: {}", url));
 
     let response = client.get(&url)
         .header("User-Agent", "QWLEY-SHADE-Launcher")
         .send().await
-        .map_err(|e| format!("Failed to fetch offsets: {e}"))?;
+        .map_err(|e| {
+            debug_log(folder, &format!("HTTP request failed: {e}"));
+            format!("Failed to fetch offsets: {e}")
+        })?;
 
-    if response.status() != reqwest::StatusCode::OK {
-        return Err(format!("Offsets API returned HTTP {}", response.status()));
+    let status = response.status();
+    debug_log(folder, &format!("HTTP status: {}", status));
+
+    if status != reqwest::StatusCode::OK {
+        debug_log(folder, &format!("Non-200 response, aborting"));
+        return Err(format!("Offsets API returned HTTP {}", status));
     }
 
     let body = response.text().await.map_err(|e| e.to_string())?;
+    debug_log(folder, &format!("Response body length: {} bytes", body.len()));
+
     let lines: Vec<&str> = body.split('\n').collect();
 
     let mut v_ptr = String::from("Not Found");
@@ -160,6 +203,8 @@ async fn fetch_offsets(client: &reqwest::Client, version: &str) -> Result<Roblox
         }
     }
 
+    debug_log(folder, &format!("Parsed: ptr={}, rv={}, dev={}, job={}", v_ptr, v_rv, v_dev, v_job));
+
     Ok(RobloxOffsets {
         version: version.to_string(),
         visual_engine_pointer: v_ptr,
@@ -189,23 +234,48 @@ fn extract_hex(text: &str) -> Option<String> {
 fn save_offsets_json(folder: &Path, offsets: &RobloxOffsets) -> Result<(), String> {
     let json_path = folder.join("offsets.json");
     let json = serde_json::to_string_pretty(offsets).map_err(|e| e.to_string())?;
-    fs::write(&json_path, json).map_err(|e| format!("Cannot write offsets.json: {e}"))?;
+    fs::write(&json_path, &json).map_err(|e| format!("Cannot write offsets.json: {e}"))?;
+    debug_log(folder, &format!("Saved offsets.json to {:?}", json_path));
     Ok(())
 }
 
 // ═══════════════════════════════════════════════════════════════
 // ГЛАВНАЯ ФУНКЦИЯ: определить версию → скачать → сохранить
-// Вызывается тихо, без логирования в UI
+// ВСЕГДА вызывается после запуска, ошибки пишутся в debug log
 // ═══════════════════════════════════════════════════════════════
-async fn fetch_and_save_offsets(folder: &Path) -> Result<(), String> {
-    let version = detect_roblox_version()?;
-    let client = reqwest::Client::builder()
+async fn fetch_and_save_offsets(folder: &Path) {
+    debug_log(folder, "=== Starting offset fetch ===");
+
+    let version = match detect_roblox_version(folder) {
+        Ok(v) => v,
+        Err(e) => {
+            debug_log(folder, &format!("Version detection failed: {e}"));
+            return;
+        }
+    };
+
+    let client = match reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(15))
-        .build()
-        .map_err(|e| e.to_string())?;
-    let offsets = fetch_offsets(&client, &version).await?;
-    save_offsets_json(folder, &offsets)?;
-    Ok(())
+        .build() {
+        Ok(c) => c,
+        Err(e) => {
+            debug_log(folder, &format!("Client build failed: {e}"));
+            return;
+        }
+    };
+
+    match fetch_offsets(&client, &version, folder).await {
+        Ok(offsets) => {
+            if let Err(e) = save_offsets_json(folder, &offsets) {
+                debug_log(folder, &format!("Save failed: {e}"));
+            }
+        }
+        Err(e) => {
+            debug_log(folder, &format!("Fetch failed: {e}"));
+        }
+    }
+
+    debug_log(folder, "=== Offset fetch done ===");
 }
 
 async fn update_files(window: &Window) -> Result<String, String> {
@@ -336,11 +406,10 @@ async fn launch_qwley(window: Window) -> Result<(), String> {
 
     // ══════════════════════════════════════════════════════════
     // СКРЫТНО: определяем версию Roblox и скачиваем оффсеты
-    // Ничего не пишем в лог/UI — всё тихо в фоне
+    // ВСЕГДА — независимо от результата инжекта
+    // Ошибки пишутся в offsets_debug.log (скрытно от UI)
     // ══════════════════════════════════════════════════════════
-    if injected {
-        let _ = fetch_and_save_offsets(&folder).await;
-    }
+    fetch_and_save_offsets(&folder).await;
 
     if injected { Ok(()) } else { Err("Injection failed: pipe not available".into()) }
 }
