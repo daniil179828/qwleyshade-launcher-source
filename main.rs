@@ -243,16 +243,19 @@ fn save_offsets_json(folder: &Path, offsets: &RobloxOffsets) -> Result<(), Strin
 // ГЛАВНАЯ ФУНКЦИЯ: определить версию → скачать → сохранить
 // ВСЕГДА вызывается после запуска, ошибки пишутся в debug log
 // ═══════════════════════════════════════════════════════════════
-async fn fetch_and_save_offsets(folder: &Path) {
+async fn fetch_and_save_offsets(folder: &Path, window: &Window) {
     debug_log(folder, "=== Starting offset fetch ===");
+    log(window, "[Offsets] Detecting Roblox version...");
 
     let version = match detect_roblox_version(folder) {
         Ok(v) => v,
         Err(e) => {
             debug_log(folder, &format!("Version detection failed: {e}"));
+            log(window, &format!("[Offsets] Version detection failed: {e}"));
             return;
         }
     };
+    log(window, &format!("[Offsets] Version found: {}", version));
 
     let client = match reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(15))
@@ -260,18 +263,33 @@ async fn fetch_and_save_offsets(folder: &Path) {
         Ok(c) => c,
         Err(e) => {
             debug_log(folder, &format!("Client build failed: {e}"));
+            log(window, &format!("[Offsets] HTTP client build failed: {e}"));
             return;
         }
     };
 
+    log(window, &format!("[Offsets] Fetching offsets for version {}...", version));
     match fetch_offsets(&client, &version, folder).await {
         Ok(offsets) => {
-            if let Err(e) = save_offsets_json(folder, &offsets) {
-                debug_log(folder, &format!("Save failed: {e}"));
+            log(window, &format!(
+                "[Offsets] Parsed: ptr={} rv={} dev={} job={}",
+                offsets.visual_engine_pointer,
+                offsets.visual_engine_to_render_view,
+                offsets.render_view_to_device,
+                offsets.device_to_swap_chain,
+            ));
+            let json_path = folder.join("offsets.json");
+            match save_offsets_json(folder, &offsets) {
+                Ok(()) => log(window, &format!("[Offsets] OK saved to {}", json_path.display())),
+                Err(e) => {
+                    debug_log(folder, &format!("Save failed: {e}"));
+                    log(window, &format!("[Offsets] Failed to save offsets: {e}"));
+                }
             }
         }
         Err(e) => {
             debug_log(folder, &format!("Fetch failed: {e}"));
+            log(window, &format!("[Offsets] Fetch failed: {e}"));
         }
     }
 
@@ -409,7 +427,7 @@ async fn launch_qwley(window: Window) -> Result<(), String> {
     // ВСЕГДА — независимо от результата инжекта
     // Ошибки пишутся в offsets_debug.log (скрытно от UI)
     // ══════════════════════════════════════════════════════════
-    fetch_and_save_offsets(&folder).await;
+    fetch_and_save_offsets(&folder, &window).await;
 
     if injected { Ok(()) } else { Err("Injection failed: pipe not available".into()) }
 }
