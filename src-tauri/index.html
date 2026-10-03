@@ -18,6 +18,8 @@
   --accent-end: #8c8c94;
   --pill-blue: #261f18;
   --pill-text: #f2ece4;
+  --background-dim: 0.35;
+  --app-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -32,7 +34,7 @@ html, body {
   background-position: center;
   background-repeat: no-repeat;
   color: var(--text);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--app-font);
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -52,7 +54,7 @@ body::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(10, 10, 10, 0.35);
+  background: rgba(10, 10, 10, var(--background-dim));
   z-index: 0;
   pointer-events: none;
   opacity: 0;
@@ -93,6 +95,41 @@ body.has-custom-bg::before {
 .tb-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
 .tb-close:hover { background: #e5484d; color: white; }
 
+body.mac-controls .titlebar {
+  justify-content: flex-start;
+  padding-left: 12px;
+}
+
+body.mac-controls .titlebar-spacer {
+  display: none;
+}
+
+body.mac-controls .titlebar-controls {
+  flex-direction: row;
+  gap: 8px;
+}
+
+body.mac-controls .tb-btn {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border-radius: 50%;
+  color: transparent;
+  font-size: 0;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
+}
+
+body.mac-controls .tb-close { background: #ff5f57; }
+body.mac-controls .tb-min { background: #febc2e; }
+body.mac-controls .tb-max { background: #28c840; }
+body.mac-controls .tb-close { order: 1; }
+body.mac-controls .tb-min { order: 2; }
+body.mac-controls .tb-max { order: 3; }
+
+body.mac-controls .tb-btn:hover {
+  filter: brightness(0.88);
+}
+
 .nav-wrap {
   position: relative;
   z-index: 4;
@@ -130,7 +167,8 @@ body.has-custom-bg::before {
   border-radius: 999px;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px) saturate(140%);
+  box-shadow: 0 4px 18px rgba(10, 14, 23, 0.25);
 }
 
 .nav-item {
@@ -172,6 +210,7 @@ body.has-custom-bg::before {
   font-weight: 600;
   background: var(--pill-blue);
   padding: 8px 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 .nav-item[aria-current="page"] .nav-label {
   max-width: 120px;
@@ -230,7 +269,8 @@ body.has-custom-bg::before {
 .view:not([hidden]) .hero > *,
 .view:not([hidden]) .changelog,
 .view:not([hidden]) .settings-inner > *,
-.view:not([hidden]) .about-inner > * {
+.view:not([hidden]) .about-inner > *,
+.view:not([hidden]) .presets-inner > * {
   animation: fadeSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -288,10 +328,12 @@ body.has-custom-bg::before {
 }
 
 .badge-muted {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: var(--text-dim);
   font-weight: 500;
+  backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .status-text {
@@ -391,14 +433,14 @@ body.has-custom-bg::before {
   width: 300px;
   flex-shrink: 0;
   margin: 0 20px 20px 0;
-  background: rgba(22, 22, 22, 0.7);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 19px;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 32px rgba(10, 14, 23, 0.45);
+  backdrop-filter: blur(24px) saturate(180%);
 }
 
 .changelog[hidden] {
@@ -430,11 +472,12 @@ body.has-custom-bg::before {
 .changelog-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
 
 .changelog-entry {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 12px;
   flex: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .changelog-entry-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -452,18 +495,20 @@ body.has-custom-bg::before {
   border-radius: 50%; background: var(--pill-blue);
 }
 
-.view-settings, .view-about, .view-update { overflow-y: auto; }
+.view-settings, .view-about, .view-update, .view-presets { overflow-y: auto; }
 
 
 .view-settings::-webkit-scrollbar,
 .view-about::-webkit-scrollbar,
-.view-update::-webkit-scrollbar {
+.view-update::-webkit-scrollbar,
+.view-presets::-webkit-scrollbar {
   width: 0px;
   background: transparent;
 }
 .view-settings,
 .view-about,
-.view-update {
+.view-update,
+.view-presets {
   scrollbar-width: none;
 }
 
@@ -486,11 +531,13 @@ body.has-custom-bg::before {
   display: flex;
   align-items: center;
   gap: 20px;
-  background: rgba(24, 24, 26, 0.7);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 19px;
   padding: 20px 24px;
   margin-bottom: 28px;
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 32px rgba(10, 14, 23, 0.4);
 }
 
 .author-avatar {
@@ -531,15 +578,17 @@ body.has-custom-bg::before {
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03));
   color: var(--text);
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
   text-decoration: none;
   cursor: pointer;
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 4px 14px rgba(10, 14, 23, 0.3);
   transition: all 0.2s ease;
 }
 
@@ -568,12 +617,14 @@ body.has-custom-bg::before {
 }
 
 .settings-section {
-  background: rgba(24, 24, 26, 0.7);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 19px;
   padding: 24px; 
   margin-bottom: 20px;
   width: 100%;
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 32px rgba(10, 14, 23, 0.4);
 }
 
 .settings-section-title {
@@ -666,6 +717,168 @@ body.has-custom-bg::before {
   border-color: transparent;
 }
 
+.language-options {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.language-option {
+  padding: 7px 13px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--text-dim);
+  background: transparent;
+  font: 600 12px/1 var(--app-font);
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+
+.language-option:hover {
+  color: #fff;
+}
+
+.language-option.active {
+  color: #fff;
+  background: var(--pill-blue);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.setting-range-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+}
+
+.setting-range {
+  width: 170px;
+  accent-color: var(--pill-text);
+}
+
+.setting-range-value {
+  width: 38px;
+  color: var(--text-dim);
+  font-size: 12px;
+  text-align: right;
+}
+
+.font-options {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 520px;
+}
+
+.font-option {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 11px;
+  color: #fff;
+  background: rgba(255,255,255,0.055);
+  font-size: 21px;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.font-option:hover {
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.1);
+}
+
+.font-option.active {
+  border-color: rgba(255,255,255,0.75);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.13);
+}
+
+.font-option.active::after,
+.creator-theme.active::after {
+  content: "✓";
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 15px;
+  height: 15px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #161616;
+  background: #fff;
+  font: 700 10px/1 Arial, sans-serif;
+}
+
+.creator-themes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  flex-wrap: wrap;
+  max-width: 560px;
+}
+
+.creator-theme {
+  position: relative;
+  width: 78px;
+  height: 48px;
+  padding: 9px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 11px;
+  color: var(--theme-text);
+  background: linear-gradient(135deg, var(--theme-bg), var(--theme-accent));
+  cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.creator-theme:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.4);
+}
+
+.creator-theme.active {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.13);
+}
+
+.creator-theme-lines {
+  display: block;
+  width: 30px;
+  height: 3px;
+  margin: 4px 0;
+  border-radius: 99px;
+  background: currentColor;
+  opacity: .75;
+}
+
+.creator-theme-lines.short {
+  width: 18px;
+}
+
+body.reduced-motion *,
+body.reduced-motion *::before,
+body.reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-delay: 0ms !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+body.reduced-motion .loading-wordmark span {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+body.low-effects * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 .switch {
   position: relative;
   display: inline-block;
@@ -720,7 +933,7 @@ input:checked + .slider:before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 40px;
+  gap: 34px;
   background: var(--bg);
   transition: opacity 0.5s ease, visibility 0.5s ease;
 }
@@ -731,10 +944,27 @@ input:checked + .slider:before {
   pointer-events: none;
 }
 
-.loading-logo {
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
+.loading-wordmark {
+  display: flex;
+  gap: 0.12em;
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-shadow: 0 12px 40px rgba(255,255,255,0.14);
+}
+
+.loading-wordmark span {
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(8px);
+  animation: loadingLetterIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i) * 55ms);
+}
+
+@keyframes loadingLetterIn {
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
 .loading-bar-wrap {
@@ -759,6 +989,7 @@ input:checked + .slider:before {
   border-radius: 999px;
   background: linear-gradient(90deg, #ffffff 0%, rgba(255,255,255,0.4) 100%);
   transition: width 0.3s ease-out;
+  box-shadow: 0 0 16px rgba(255,255,255,0.35);
 }
 
 .loading-percent {
@@ -820,11 +1051,147 @@ input:checked + .slider:before {
 .color-custom-input::-webkit-color-swatch-wrapper { padding: 0; }
 .color-custom-input::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.12); border-radius: 50%; }
 .color-custom-input::-moz-color-swatch { border: 2px solid rgba(255,255,255,0.12); border-radius: 50%; }
+
+.presets-inner {
+  width: 100%;
+  padding: 8px 32px 48px;
+  max-width: 1180px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.presets-inner .eyebrow {
+  margin-bottom: 24px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.preset-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  padding: 16px 18px;
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 6px 20px rgba(10, 14, 23, 0.3);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.preset-card:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+}
+
+.preset-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.preset-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pill-text);
+  background: var(--pill-blue);
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.preset-name {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.preset-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 13px;
+  color: var(--text-dim);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+.user-presets-section {
+  margin-top: 30px;
+}
+
+.user-presets-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.preset-dropzone {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 22px;
+  border: 1px dashed rgba(255,255,255,0.28);
+  border-radius: 16px;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.035);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease, color .2s ease;
+}
+
+.preset-dropzone:hover,
+.preset-dropzone.is-dragging {
+  color: #fff;
+  border-color: rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.08);
+}
+
+.setting-action {
+  min-width: 112px;
+  padding: 9px 14px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.setting-action.is-listening {
+  color: var(--pill-text);
+  background: var(--pill-blue);
+}
+
+.setting-feedback {
+  min-height: 16px;
+  margin: 10px 2px 0;
+  color: var(--text-dim);
+  font-size: 12px;
+}
 </style>
 </head>
 <body class="has-custom-bg">
   <div class="loading-screen" id="loading-screen">
-    <img class="loading-logo" src="icon.png" alt="Qwley Shade">
+    <div class="loading-wordmark" aria-label="Qwley Shade">
+      <span style="--i:0">Q</span><span style="--i:1">W</span><span style="--i:2">L</span><span style="--i:3">E</span><span style="--i:4">Y</span>
+      <span style="--i:5">&nbsp;</span>
+      <span style="--i:6">S</span><span style="--i:7">H</span><span style="--i:8">A</span><span style="--i:9">D</span><span style="--i:10">E</span>
+    </div>
     <div class="loading-bar-wrap">
       <div class="loading-bar">
         <div class="loading-bar-fill" id="loading-bar-fill"></div>
@@ -836,7 +1203,8 @@ input:checked + .slider:before {
   <div class="titlebar" data-tauri-drag-region>
     <div class="titlebar-spacer"></div>
     <div class="titlebar-controls">
-      <button id="btn-min" class="tb-btn" title="Minimize">&#8211;</button>
+      <button id="btn-min" class="tb-btn tb-min" title="Minimize">&#8211;</button>
+      <button id="btn-max" class="tb-btn tb-max" title="Maximize">&#9633;</button>
       <button id="btn-close" class="tb-btn tb-close" title="Close">&times;</button>
     </div>
   </div>
@@ -858,6 +1226,12 @@ input:checked + .slider:before {
           <path d="M5.5 9.5V20a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1V9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" data-view="presets">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="m12 3 2.5 5.2 5.7.8-4.2 4 1 5.7L12 16.1l-5 2.6 1-5.7-4.2-4 5.7-.8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="nav-label">Presets</span>
       </button>
       <button class="nav-item" data-view="settings">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -940,6 +1314,21 @@ input:checked + .slider:before {
       </div>
     </section>
 
+    <section class="view view-presets" id="view-presets" hidden>
+      <div class="presets-inner">
+        <p class="eyebrow">ReShade Presets</p>
+        <div class="preset-grid" id="preset-grid"></div>
+        <div class="user-presets-section">
+          <p class="user-presets-title">Your presets</p>
+          <button class="preset-dropzone" id="preset-dropzone" type="button">
+            Drop a .ini file here or click to choose a preset
+          </button>
+          <div class="preset-grid" id="user-preset-grid"></div>
+          <p class="setting-feedback" id="preset-feedback"></p>
+        </div>
+      </div>
+    </section>
+
     <section class="view view-about" id="view-about" hidden>
       <div class="about-inner">
         <p class="eyebrow">About us</p>
@@ -954,27 +1343,27 @@ input:checked + .slider:before {
 
         <p class="settings-section-title">Official links</p>
         <div class="link-row">
-          <a class="link-btn" href="https://t.me/qwleyshade" target="_blank" rel="noopener">
+          <a class="link-btn external-link" data-url="https://t.me/qwleyshade" href="https://t.me/qwleyshade" target="_blank" rel="noopener">
             <svg class="link-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="m22 2-7 20-4-9-9-4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M22 2 11 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>Telegram</span>
           </a>
-          <a class="link-btn" href="https://qwleyshade.vercel.app/" target="_blank" rel="noopener">
+          <a class="link-btn external-link" data-url="https://github.com/daniil179828/QWLEY-SHADE" href="https://github.com/daniil179828/QWLEY-SHADE" target="_blank" rel="noopener">
             <svg class="link-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/>
               <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M2 12h20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
             </svg>
-            <span>Website</span>
+            <span>GitHub</span>
           </a>
-          <button class="link-btn link-btn-disabled" disabled title="Coming soon">
+          <a class="link-btn external-link" data-url="https://discord.gg/c2xcHK5KHT" href="https://discord.gg/c2xcHK5KHT" target="_blank" rel="noopener">
             <svg class="link-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>Discord</span>
-          </button>
+          </a>
         </div>
       </div>
     </section>
@@ -1024,10 +1413,121 @@ input:checked + .slider:before {
               </div>
             </div>
           </div>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title">Background Darkness</span>
+              <span class="setting-desc">Make text and controls easier to read over bright backgrounds</span>
+            </div>
+            <div class="setting-range-wrap">
+              <input type="range" id="background-dim" class="setting-range" min="0" max="80" step="5" value="35">
+              <span class="setting-range-value" id="background-dim-value">35%</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title">Interface Animations</span>
+              <span class="setting-desc">Disable motion for a calmer and slightly lighter interface</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-animations" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title">Glass Effects</span>
+              <span class="setting-desc">Disable background blur to reduce GPU usage on weaker PCs</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-glass" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title">macOS Button Layout</span>
+              <span class="setting-desc">Show red, yellow and green window controls on the left</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-mac-controls">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title">App Font</span>
+              <span class="setting-desc">Font used throughout the entire launcher</span>
+            </div>
+            <div class="font-options" id="font-options">
+              <button class="font-option" data-font="inter" style="font-family:Inter,Arial,sans-serif" title="Inter">Aa</button>
+              <button class="font-option" data-font="arial" style="font-family:Arial,sans-serif" title="Arial">Aa</button>
+              <button class="font-option" data-font="verdana" style="font-family:Verdana,sans-serif" title="Verdana">Aa</button>
+              <button class="font-option" data-font="trebuchet" style="font-family:'Trebuchet MS',sans-serif" title="Trebuchet MS">Aa</button>
+              <button class="font-option" data-font="georgia" style="font-family:Georgia,serif" title="Georgia">Aa</button>
+              <button class="font-option" data-font="times" style="font-family:'Times New Roman',serif" title="Times New Roman">Aa</button>
+              <button class="font-option" data-font="courier" style="font-family:'Courier New',monospace" title="Courier New">Aa</button>
+              <button class="font-option" data-font="comic" style="font-family:'Comic Sans MS',cursive" title="Comic Sans MS">Aa</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title">Content Creator Themes</span>
+              <span class="setting-desc">Five focused color palettes for streams, edits and screenshots</span>
+            </div>
+            <div class="creator-themes" id="creator-themes">
+              <button class="creator-theme" data-theme="neon" style="--theme-bg:#061817;--theme-accent:#0b5e59;--theme-text:#55f2df" title="Neon Stream"><span class="creator-theme-lines"></span><span class="creator-theme-lines short"></span></button>
+              <button class="creator-theme" data-theme="mono" style="--theme-bg:#101010;--theme-accent:#353535;--theme-text:#ffffff" title="Mono Studio"><span class="creator-theme-lines"></span><span class="creator-theme-lines short"></span></button>
+              <button class="creator-theme" data-theme="gold" style="--theme-bg:#211806;--theme-accent:#c8941f;--theme-text:#ffe08a" title="Golden Hour"><span class="creator-theme-lines"></span><span class="creator-theme-lines short"></span></button>
+              <button class="creator-theme" data-theme="crimson" style="--theme-bg:#19080b;--theme-accent:#630f1d;--theme-text:#ff6678" title="Crimson Live"><span class="creator-theme-lines"></span><span class="creator-theme-lines short"></span></button>
+              <button class="creator-theme" data-theme="lime" style="--theme-bg:#171905;--theme-accent:#9daa00;--theme-text:#edff55" title="Lime Edit"><span class="creator-theme-lines"></span><span class="creator-theme-lines short"></span></button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title">Reset Interface</span>
+              <span class="setting-desc">Restore the default background, colors and visual effects</span>
+            </div>
+            <button id="btn-reset-interface" class="bg-btn bg-btn-clear" type="button">Reset</button>
+          </div>
         </div>
 
         <div class="settings-section">
           <p class="settings-section-title">General Preferences</p>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title" id="language-title">Language</span>
+              <span class="setting-desc" id="language-desc">Choose the launcher interface language</span>
+            </div>
+            <div class="language-options" id="language-options" role="group" aria-label="Language">
+              <button class="language-option" data-language="en" type="button">English</button>
+              <button class="language-option" data-language="ru" type="button">Русский</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title">ReShade Overlay Key</span>
+              <span class="setting-desc">Press the button, then choose a new key instead of Home</span>
+            </div>
+            <button id="btn-overlay-key" class="setting-action" type="button">Home</button>
+          </div>
+          <p class="setting-feedback" id="overlay-key-feedback"></p>
+          <div class="settings-row">
+            <div class="setting-info">
+              <span class="setting-title">Overlay Open Key</span>
+              <span class="setting-desc">Key combo to open the ReShade overlay (default: Shift+Tab)</span>
+            </div>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <select id="menu-key-modifier" class="setting-action" style="padding:0 6px;min-width:unset;width:80px;">
+                <option value="">—</option>
+                <option value="SHIFT">Shift</option>
+                <option value="CTRL">Ctrl</option>
+                <option value="ALT">Alt</option>
+              </select>
+              <span style="opacity:0.5;">+</span>
+              <button id="btn-menu-key" class="setting-action" type="button">Tab</button>
+            </div>
+          </div>
+          <p class="setting-feedback" id="menu-key-feedback"></p>
           <div class="settings-row">
             <div class="setting-info">
               <span class="setting-title">Autostart Launcher</span>
@@ -1055,19 +1555,224 @@ input:checked + .slider:before {
 
   <script type="module">
 const TAURI = window.__TAURI__ || null;
-const invoke = TAURI ? TAURI.core.invoke : async (cmd) => {
-  if (cmd === "check_update") return { local: "1.0.7", remote: "v.1.1.0", needs_update: true, installed: false };
+const invoke = TAURI ? TAURI.core.invoke : async (cmd, args) => {
+  if (cmd === "check_update") return { local: "1.0.11", remote: "v.1.1.0", needs_update: true, installed: false };
   if (cmd === "get_changelog") {
     const res = await fetch("https://raw.githubusercontent.com/daniil179828/Changelog/main/changelog.json");
     if (!res.ok) throw new Error("changelog fetch failed");
     return await res.json();
   }
+  if (cmd === "get_presets") {
+    const res = await fetch("https://api.github.com/repos/daniil179828/preset/contents/");
+    if (!res.ok) throw new Error("presets fetch failed");
+    const files = await res.json();
+    return files
+      .filter((f) => f.name.toLowerCase().endsWith(".ini"))
+      .map((f) => ({ name: f.name, download_url: f.download_url }));
+  }
+  if (cmd === "download_preset") {
+    const a = document.createElement("a");
+    a.href = args.url;
+    a.download = args.name || "preset.ini";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return args.name;
+  }
+  if (cmd === "get_installed_presets") return [];
+  if (cmd === "get_user_presets") return [];
+  if (cmd === "get_active_preset") return null;
+  if (cmd === "get_overlay_key") return 36;
+  if (cmd === "pick_and_import_preset") return null;
+  if (cmd === "get_menu_key") return "SHIFT+TAB";
+  if (cmd === "check_repo_updates") return { game_sha: "abc123", reshade_sha: "def456", has_new_content: false };
+  if (cmd === "import_preset" || cmd === "select_preset" || cmd === "set_overlay_key" || cmd === "set_menu_key" || cmd === "open_external" || cmd === "mark_repos_seen") return null;
   return null;
 };
 const listen = TAURI ? TAURI.event.listen : async () => () => {};
 const getCurrentWindow = TAURI
   ? TAURI.window.getCurrentWindow
-  : () => ({ minimize: () => {}, close: () => {} });
+  : () => ({ minimize: () => {}, toggleMaximize: () => {}, close: () => {} });
+
+const TRANSLATIONS = {
+  en: {
+    navUpdate: "Update", navHome: "Home", navPresets: "Presets", navSettings: "Settings", navAbout: "About us",
+    checking: "Checking for updates…", launcherUpdate: "Launcher Update", waitingCheck: "Waiting for version check…",
+    versionHistory: "Version History", reshadePresets: "ReShade Presets", yourPresets: "Your presets",
+    presetDropzone: "Drop a .ini file here or click to choose a preset",
+    aboutUs: "About us", authorRole: "Author & Developer of Qwley Shade", officialLinks: "Official links",
+    launcherSettings: "Launcher Settings", interfaceCustomization: "Interface Customization",
+    logVisibility: "Update Log Visibility", logVisibilityDesc: "Show or completely hide the Update log block on Home tab",
+    customBackground: "Custom Background Image", customBackgroundDesc: "Enter a direct image URL",
+    apply: "Apply", clear: "Clear", accentColor: "Accent Color", accentColorDesc: "Change the color of active buttons and UI accents",
+    backgroundDarkness: "Background Darkness", backgroundDarknessDesc: "Make text and controls easier to read over bright backgrounds",
+    interfaceAnimations: "Interface Animations", interfaceAnimationsDesc: "Disable motion for a calmer and slightly lighter interface",
+    glassEffects: "Glass Effects", glassEffectsDesc: "Disable background blur to reduce GPU usage on weaker PCs",
+    macLayout: "macOS Button Layout", macLayoutDesc: "Show red, yellow and green window controls on the left",
+    appFont: "App Font", appFontDesc: "Font used throughout the entire launcher",
+    creatorThemes: "Content Creator Themes", creatorThemesDesc: "Five focused color palettes for streams, edits and screenshots",
+    resetInterface: "Reset Interface", resetInterfaceDesc: "Restore the default background, colors and visual effects", reset: "Reset",
+    generalPreferences: "General Preferences", language: "Language", languageDesc: "Choose the launcher interface language",
+    overlayKey: "ReShade Overlay Key", overlayKeyDesc: "Press the button, then choose a new key instead of Home",
+    menuKey: "Overlay Open Key", menuKeyDesc: "Key combo to open the ReShade overlay (default: Shift+Tab)",
+    menuKeyChanged: "Overlay open key set to {key}", menuKeyFailed: "Failed to change key: ",
+    autostart: "Autostart Launcher", autostartDesc: "Automatically open launcher when system starts",
+    notifications: "Update Notifications", notificationsDesc: "Receive system popups when a new version is released",
+    minimize: "Minimize", maximize: "Maximize", close: "Close", unavailable: "Roblox: unavailable",
+    loadingPresets: "Loading presets…", presetsUnavailable: "Presets unavailable — check your internet connection",
+    noPresets: "No presets found in the repository", installed: "Downloaded", download: "Download",
+    noUserPresets: "No presets added yet", active: "Active", selectPreset: "Apply",
+    addingPreset: "Adding preset…", presetAdded: "{name} added and applied",
+    presetAddFailed: "Failed to add preset: ", presetApplied: "{name} applied",
+    presetApplyFailed: "Failed to apply preset: ", dropIni: "Drop a file with the .ini extension",
+    pressKey: "Press a key…", escCancel: "Esc — cancel", unsupportedKey: "This key is not supported",
+    overlayChanged: "KeyOverlay changed to {key}", overlayFailed: "Failed to change key: ",
+    updateAvailableTitle: "Qwley Shade — update available", updateAvailableBody: "Version v{version} is out. Open the Update tab to install.",
+    folderMissing: "QWLEY SHADE folder not found — downloading…", newVersion: "New version available — open the Update tab to install",
+    latestVersion: "You are on the latest version", retryCheck: "Checking for updates… (retry {attempt})",
+    checkFailed: "Failed to check for updates [{error}]", installing: "Installing…", downloading: "Downloading QWLEY SHADE…",
+    installCompleteHome: "Installation complete — press Launch to play", installComplete: "Installation complete.",
+    installError: "Install error: ", launching: "Launching QWLEY SHADE… (eurotrucks2 in 10s)",
+    gameLaunched: "Game launched", launchError: "Launch error: ", ready: "Ready — press Launch to play",
+    brown: "Brown (default)", green: "Green", blue: "Blue", purple: "Purple", red: "Red", black: "Black", gray: "Gray",
+    customColor: "Custom color", neon: "Neon Stream", mono: "Mono Studio", gold: "Golden Hour", crimson: "Crimson Live", lime: "Lime Edit"
+  },
+  ru: {
+    navUpdate: "Обновление", navHome: "Главная", navPresets: "Пресеты", navSettings: "Настройки", navAbout: "О нас",
+    checking: "Проверка обновлений…", launcherUpdate: "Обновление лаунчера", waitingCheck: "Ожидание проверки версии…",
+    versionHistory: "История версий", reshadePresets: "Пресеты ReShade", yourPresets: "Твои пресеты",
+    presetDropzone: "Перетащи сюда файл .ini или нажми, чтобы выбрать пресет",
+    aboutUs: "О нас", authorRole: "Автор и разработчик Qwley Shade", officialLinks: "Официальные ссылки",
+    launcherSettings: "Настройки лаунчера", interfaceCustomization: "Настройка интерфейса",
+    logVisibility: "Отображение Update log", logVisibilityDesc: "Показать или полностью скрыть блок Update log на главной",
+    customBackground: "Свое фоновое изображение", customBackgroundDesc: "Введи прямую ссылку на изображение",
+    apply: "Применить", clear: "Очистить", accentColor: "Цвет акцента", accentColorDesc: "Изменить цвет активных кнопок и элементов интерфейса",
+    backgroundDarkness: "Затемнение фона", backgroundDarknessDesc: "Повышает читаемость текста и элементов на светлом фоне",
+    interfaceAnimations: "Анимации интерфейса", interfaceAnimationsDesc: "Отключи движение для более спокойного и легкого интерфейса",
+    glassEffects: "Эффекты стекла", glassEffectsDesc: "Отключи размытие фона, чтобы снизить нагрузку на слабых ПК",
+    macLayout: "Расположение кнопок macOS", macLayoutDesc: "Показывать красную, желтую и зеленую кнопки окна слева",
+    appFont: "Шрифт приложения", appFontDesc: "Шрифт, используемый во всем лаунчере",
+    creatorThemes: "Темы для авторов контента", creatorThemesDesc: "Пять цветовых палитр для стримов, монтажа и скриншотов",
+    resetInterface: "Сброс интерфейса", resetInterfaceDesc: "Вернуть стандартный фон, цвета и визуальные эффекты", reset: "Сбросить",
+    generalPreferences: "Общие настройки", language: "Язык", languageDesc: "Выбери язык интерфейса лаунчера",
+    overlayKey: "Клавиша оверлея ReShade", overlayKeyDesc: "Нажми кнопку, затем выбери новую клавишу вместо Home",
+    menuKey: "Клавиша открытия оверлея", menuKeyDesc: "Комбо для открытия оверлея ReShade (по умолч.: Shift+Tab)",
+    menuKeyChanged: "Клавиша открытия оверлея: {key}", menuKeyFailed: "Не удалось изменить клавишу: ",
+    autostart: "Автозапуск лаунчера", autostartDesc: "Автоматически открывать лаунчер при запуске системы",
+    notifications: "Уведомления об обновлениях", notificationsDesc: "Получать системные уведомления при выходе новой версии",
+    minimize: "Свернуть", maximize: "Развернуть", close: "Закрыть", unavailable: "Roblox: недоступен",
+    loadingPresets: "Загрузка пресетов…", presetsUnavailable: "Пресеты недоступны — проверь подключение к интернету",
+    noPresets: "В репозитории нет пресетов", installed: "Скачан", download: "Скачать",
+    noUserPresets: "Добавленных пресетов пока нет", active: "Активен", selectPreset: "Применить",
+    addingPreset: "Добавляю пресет…", presetAdded: "{name} добавлен и применен",
+    presetAddFailed: "Не удалось добавить пресет: ", presetApplied: "{name} применен",
+    presetApplyFailed: "Не удалось применить пресет: ", dropIni: "Перетащи файл с расширением .ini",
+    pressKey: "Нажми клавишу…", escCancel: "Esc — отмена", unsupportedKey: "Эта клавиша не поддерживается",
+    overlayChanged: "KeyOverlay изменен на {key}", overlayFailed: "Не удалось изменить клавишу: ",
+    updateAvailableTitle: "Qwley Shade — доступно обновление", updateAvailableBody: "Вышла версия v{version}. Открой раздел обновления для установки.",
+    folderMissing: "Папка QWLEY SHADE не найдена — скачивание…", newVersion: "Доступна новая версия — открой раздел обновления для установки",
+    latestVersion: "Установлена последняя версия", retryCheck: "Проверка обновлений… (попытка {attempt})",
+    checkFailed: "Не удалось проверить обновления [{error}]", installing: "Installing…", downloading: "Скачивание QWLEY SHADE…",
+    installCompleteHome: "Установка завершена — нажми Launch для запуска", installComplete: "Установка завершена.",
+    installError: "Ошибка установки: ", launching: "Запуск QWLEY SHADE… (eurotrucks2 через 10 сек.)",
+    gameLaunched: "Игра запущена", launchError: "Ошибка запуска: ", ready: "Готово — нажми Launch для запуска",
+    brown: "Коричневый (стандартный)", green: "Зеленый", blue: "Синий", purple: "Фиолетовый", red: "Красный", black: "Черный", gray: "Серый",
+    customColor: "Свой цвет", neon: "Неоновый стрим", mono: "Моно-студия", gold: "Золотой час", crimson: "Багровый эфир", lime: "Лаймовый монтаж"
+  }
+};
+
+const currentLanguage = localStorage.getItem("qwley_shade_language") === "ru" ? "ru" : "en";
+function t(key, replacements = {}) {
+  let value = TRANSLATIONS[currentLanguage][key] ?? TRANSLATIONS.en[key] ?? key;
+  Object.entries(replacements).forEach(([name, replacement]) => {
+    value = value.replaceAll(`{${name}}`, String(replacement));
+  });
+  return value;
+}
+
+function setText(selector, key) {
+  const element = document.querySelector(selector);
+  if (element) element.textContent = t(key);
+}
+
+function applyLanguage() {
+  document.documentElement.lang = currentLanguage;
+  const textMap = {
+    '.nav-item[data-view="update"] .nav-label': "navUpdate",
+    '.nav-item[data-view="home"] .nav-label': "navHome",
+    '.nav-item[data-view="presets"] .nav-label': "navPresets",
+    '.nav-item[data-view="settings"] .nav-label': "navSettings",
+    '.nav-item[data-view="about"] .nav-label': "navAbout",
+    "#status-text": "checking", "#view-update .eyebrow": "launcherUpdate",
+    "#update-status-text": "waitingCheck", "#view-update .settings-section-title": "versionHistory",
+    "#view-presets .eyebrow": "reshadePresets", ".user-presets-title": "yourPresets",
+    "#preset-dropzone": "presetDropzone", "#view-about .eyebrow": "aboutUs",
+    ".author-role": "authorRole", "#view-about .settings-section-title": "officialLinks",
+    "#view-settings .eyebrow": "launcherSettings",
+    "#view-settings .settings-section:first-of-type .settings-section-title": "interfaceCustomization",
+    "#language-title": "language", "#language-desc": "languageDesc",
+    "#view-settings .settings-section:last-of-type .settings-section-title": "generalPreferences"
+  };
+  Object.entries(textMap).forEach(([selector, key]) => setText(selector, key));
+
+  const settingKeys = [
+    ["logVisibility", "logVisibilityDesc"], ["customBackground", "customBackgroundDesc"],
+    ["accentColor", "accentColorDesc"], ["backgroundDarkness", "backgroundDarknessDesc"],
+    ["interfaceAnimations", "interfaceAnimationsDesc"], ["glassEffects", "glassEffectsDesc"],
+    ["macLayout", "macLayoutDesc"], ["appFont", "appFontDesc"],
+    ["creatorThemes", "creatorThemesDesc"], ["resetInterface", "resetInterfaceDesc"]
+  ];
+  document.querySelectorAll("#view-settings .settings-section:first-of-type .settings-row").forEach((row, index) => {
+    if (!settingKeys[index]) return;
+    const [titleKey, descKey] = settingKeys[index];
+    const title = row.querySelector(".setting-title");
+    const desc = row.querySelector(".setting-desc");
+    if (title) title.textContent = t(titleKey);
+    if (desc) desc.textContent = t(descKey);
+  });
+
+  const generalKeys = [
+    ["language", "languageDesc"], ["overlayKey", "overlayKeyDesc"],
+    ["menuKey", "menuKeyDesc"],
+    ["autostart", "autostartDesc"], ["notifications", "notificationsDesc"]
+  ];
+  document.querySelectorAll("#view-settings .settings-section:last-of-type .settings-row").forEach((row, index) => {
+    if (!generalKeys[index]) return;
+    const [titleKey, descKey] = generalKeys[index];
+    const title = row.querySelector(".setting-title");
+    const desc = row.querySelector(".setting-desc");
+    if (title) title.textContent = t(titleKey);
+    if (desc) desc.textContent = t(descKey);
+  });
+
+  document.getElementById("btn-apply-bg").textContent = t("apply");
+  document.getElementById("btn-clear-bg").textContent = t("clear");
+  document.getElementById("btn-reset-interface").textContent = t("reset");
+  document.getElementById("btn-min").title = t("minimize");
+  document.getElementById("btn-max").title = t("maximize");
+  document.getElementById("btn-close").title = t("close");
+  document.getElementById("btn-close-x").title = t("close");
+  document.getElementById("language-options").setAttribute("aria-label", t("language"));
+
+  const swatchKeys = ["brown", "green", "blue", "purple", "red", "black", "gray"];
+  document.querySelectorAll(".color-swatch").forEach((swatch, index) => { swatch.title = t(swatchKeys[index]); });
+  document.getElementById("color-custom").title = t("customColor");
+  ["neon", "mono", "gold", "crimson", "lime"].forEach((key) => {
+    const button = document.querySelector(`.creator-theme[data-theme="${key}"]`);
+    if (button) button.title = t(key);
+  });
+  document.querySelectorAll(".language-option").forEach((button) => {
+    button.classList.toggle("active", button.dataset.language === currentLanguage);
+    button.setAttribute("aria-pressed", button.dataset.language === currentLanguage ? "true" : "false");
+  });
+}
+
+document.getElementById("language-options").addEventListener("click", (event) => {
+  const button = event.target.closest(".language-option");
+  if (!button || button.dataset.language === currentLanguage) return;
+  localStorage.setItem("qwley_shade_language", button.dataset.language);
+  window.location.reload();
+});
 
 const statusText = document.getElementById("status-text");
 const progressBar = document.getElementById("progress-bar");
@@ -1103,7 +1808,155 @@ async function loadChangelog() {
   } catch (err) {
     CHANGELOG = [{ version: "error", date: "", isNew: false, items: ["Changelog load failed: " + (err && err.message ? err.message : err)] }];
   }
-  renderChangelog(CHANGELOG);
+renderChangelog(CHANGELOG);
+
+const presetGrid = document.getElementById("preset-grid");
+const userPresetGrid = document.getElementById("user-preset-grid");
+const presetDropzone = document.getElementById("preset-dropzone");
+const presetFeedback = document.getElementById("preset-feedback");
+let PRESETS = [];
+let INSTALLED = new Set();
+let USER_PRESETS = [];
+let ACTIVE_PRESET = null;
+
+async function loadPresets() {
+  presetGrid.innerHTML = `<div class="preset-empty">${t("loadingPresets")}</div>`;
+  try {
+    const [presets, installed, userPresets] = await Promise.all([
+      invoke("get_presets"),
+      invoke("get_installed_presets"),
+      invoke("get_user_presets"),
+    ]);
+    PRESETS = presets;
+    INSTALLED = new Set(installed);
+    USER_PRESETS = userPresets || [];
+    try { ACTIVE_PRESET = await invoke("get_active_preset"); } catch (_) { ACTIVE_PRESET = null; }
+    renderPresets(PRESETS);
+    renderUserPresets();
+  } catch (err) {
+    presetGrid.innerHTML = `<div class="preset-empty">${t("presetsUnavailable")}</div>`;
+    try {
+      USER_PRESETS = await invoke("get_user_presets");
+      renderUserPresets();
+    } catch (_) {}
+  }
+}
+
+function renderPresets(presets) {
+  if (!presets || presets.length === 0) {
+    presetGrid.innerHTML = `<div class="preset-empty">${t("noPresets")}</div>`;
+    return;
+  }
+  presetGrid.innerHTML = presets
+    .map(
+      (p, i) => `
+      <div class="preset-card">
+        <span class="preset-name" title="${p.name}">${p.name}</span>
+        <div class="preset-right">
+          ${INSTALLED.has(p.name) ? `<span class="preset-badge">${t("installed")}</span>` : ""}
+          <button class="btn-icon preset-download" data-index="${i}" title="${t("download")}">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 4v11m0 0 4-4m-4 4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>`
+    )
+    .join("");
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  })[character]);
+}
+
+function renderUserPresets() {
+  if (!USER_PRESETS.length) {
+    userPresetGrid.innerHTML = `<div class="preset-empty">${t("noUserPresets")}</div>`;
+    return;
+  }
+  userPresetGrid.innerHTML = USER_PRESETS.map((name, index) => `
+    <div class="preset-card">
+      <span class="preset-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+      <div class="preset-right">
+        ${ACTIVE_PRESET === name ? `<span class="preset-badge">${t("active")}</span>` : ""}
+        <button class="btn-icon user-preset-select" data-index="${index}" title="${t("selectPreset")}">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>`).join("");
+}
+
+async function addUserPreset(path) {
+  presetFeedback.textContent = t("addingPreset");
+  try {
+    const name = path
+      ? await invoke("import_preset", { path })
+      : await invoke("pick_and_import_preset");
+    if (!name) {
+      presetFeedback.textContent = "";
+      return;
+    }
+    ACTIVE_PRESET = name;
+    USER_PRESETS = await invoke("get_user_presets");
+    INSTALLED.add(name);
+    renderUserPresets();
+    renderPresets(PRESETS);
+    presetFeedback.textContent = t("presetAdded", { name });
+  } catch (err) {
+    presetFeedback.textContent = t("presetAddFailed") + (err?.message || err);
+  }
+}
+
+presetDropzone.addEventListener("click", () => addUserPreset());
+
+userPresetGrid.addEventListener("click", async (event) => {
+  const button = event.target.closest(".user-preset-select");
+  if (!button) return;
+  const name = USER_PRESETS[Number(button.dataset.index)];
+  if (!name) return;
+  try {
+    await invoke("select_preset", { name });
+    ACTIVE_PRESET = name;
+    renderUserPresets();
+    presetFeedback.textContent = t("presetApplied", { name });
+  } catch (err) {
+    presetFeedback.textContent = t("presetApplyFailed") + (err?.message || err);
+  }
+});
+
+listen("tauri://drag-enter", () => presetDropzone.classList.add("is-dragging"));
+listen("tauri://drag-leave", () => presetDropzone.classList.remove("is-dragging"));
+listen("tauri://drag-drop", (event) => {
+  presetDropzone.classList.remove("is-dragging");
+  const paths = event?.payload?.paths || [];
+  const ini = paths.find((path) => String(path).toLowerCase().endsWith(".ini"));
+  if (ini) addUserPreset(ini);
+  else presetFeedback.textContent = t("dropIni");
+});
+
+presetGrid.addEventListener("click", async (e) => {
+  const btn = e.target.closest(".preset-download");
+  if (!btn) return;
+  const preset = PRESETS[Number(btn.dataset.index)];
+  if (!preset) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span style="font-size:11px;white-space:nowrap">…</span>';
+  try {
+    await invoke("download_preset", { name: preset.name, url: preset.download_url });
+    INSTALLED.add(preset.name);
+    renderPresets(PRESETS);
+  } catch (err) {
+    renderPresets(PRESETS);
+  }
+});
+
+loadPresets();
   renderChangelog(CHANGELOG, document.getElementById("update-changelog-list"));
   applyRobloxVersion();
 }
@@ -1113,7 +1966,7 @@ function applyRobloxVersion() {
   if (first && first.roblox) {
     robloxVersionBadge.textContent = `Roblox ${first.roblox}`;
   } else {
-    robloxVersionBadge.textContent = "Roblox: unavailable";
+    robloxVersionBadge.textContent = t("unavailable");
   }
 }
 
@@ -1142,6 +1995,7 @@ const navItems = document.querySelectorAll(".nav-item");
 const views = { 
   home: document.getElementById("view-home"), 
   update: document.getElementById("view-update"),
+  presets: document.getElementById("view-presets"),
   settings: document.getElementById("view-settings"),
   about: document.getElementById("view-about") 
 };
@@ -1168,21 +2022,31 @@ const toggleNotifications = document.getElementById("toggle-notifications");
 const bgUrlInput = document.getElementById("bg-url-input");
 const btnApplyBg = document.getElementById("btn-apply-bg");
 const btnClearBg = document.getElementById("btn-clear-bg");
+const backgroundDim = document.getElementById("background-dim");
+const backgroundDimValue = document.getElementById("background-dim-value");
+const toggleAnimations = document.getElementById("toggle-animations");
+const toggleGlass = document.getElementById("toggle-glass");
+const toggleMacControls = document.getElementById("toggle-mac-controls");
+const fontOptions = document.getElementById("font-options");
+const btnResetInterface = document.getElementById("btn-reset-interface");
 
 function updateBackground(url) {
   if (url) {
     document.body.style.backgroundImage = `url('${url}')`;
     document.body.classList.add('has-custom-bg');
   } else {
-    document.body.style.backgroundImage = "none";
-    document.body.classList.remove('has-custom-bg');
+    document.body.style.removeProperty("background-image");
+    document.body.classList.add('has-custom-bg');
   }
 }
 
+const DEFAULT_BG = "https://i.pinimg.com/1200x/37/6e/ae/376eaec4c131f0da3f9a3dd815c9ec10.jpg";
 const savedBgUrl = localStorage.getItem("qwley_shade_custom_bg");
 if (savedBgUrl) {
   updateBackground(savedBgUrl);
   bgUrlInput.value = savedBgUrl;
+} else {
+  updateBackground(DEFAULT_BG);
 }
 
 btnApplyBg.addEventListener("click", () => {
@@ -1197,6 +2061,105 @@ btnClearBg.addEventListener("click", () => {
   updateBackground(null);
   bgUrlInput.value = "";
   localStorage.removeItem("qwley_shade_custom_bg");
+});
+
+function applyBackgroundDim(value) {
+  const safeValue = Math.max(0, Math.min(80, Number(value) || 0));
+  document.documentElement.style.setProperty("--background-dim", String(safeValue / 100));
+  backgroundDim.value = String(safeValue);
+  backgroundDimValue.textContent = `${safeValue}%`;
+}
+
+function applyAnimations(enabled) {
+  toggleAnimations.checked = enabled;
+  document.body.classList.toggle("reduced-motion", !enabled);
+}
+
+function applyGlass(enabled) {
+  toggleGlass.checked = enabled;
+  document.body.classList.toggle("low-effects", !enabled);
+}
+
+function applyMacControls(enabled) {
+  toggleMacControls.checked = enabled;
+  document.body.classList.toggle("mac-controls", enabled);
+}
+
+const FONT_FAMILIES = {
+  inter: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  arial: 'Arial, sans-serif',
+  verdana: 'Verdana, sans-serif',
+  trebuchet: '"Trebuchet MS", sans-serif',
+  georgia: 'Georgia, serif',
+  times: '"Times New Roman", serif',
+  courier: '"Courier New", monospace',
+  comic: '"Comic Sans MS", cursive',
+};
+
+function applyAppFont(fontId) {
+  const safeFont = FONT_FAMILIES[fontId] ? fontId : "inter";
+  document.documentElement.style.setProperty("--app-font", FONT_FAMILIES[safeFont]);
+  fontOptions.querySelectorAll(".font-option").forEach((button) => {
+    button.classList.toggle("active", button.dataset.font === safeFont);
+  });
+}
+
+applyBackgroundDim(localStorage.getItem("qwley_shade_background_dim") ?? 35);
+applyAnimations(localStorage.getItem("qwley_shade_animations") !== "false");
+applyGlass(localStorage.getItem("qwley_shade_glass") !== "false");
+applyMacControls(localStorage.getItem("qwley_shade_mac_controls") === "true");
+applyAppFont(localStorage.getItem("qwley_shade_app_font") || "inter");
+
+backgroundDim.addEventListener("input", (event) => {
+  applyBackgroundDim(event.target.value);
+  localStorage.setItem("qwley_shade_background_dim", event.target.value);
+});
+
+toggleAnimations.addEventListener("change", (event) => {
+  applyAnimations(event.target.checked);
+  localStorage.setItem("qwley_shade_animations", event.target.checked);
+});
+
+toggleGlass.addEventListener("change", (event) => {
+  applyGlass(event.target.checked);
+  localStorage.setItem("qwley_shade_glass", event.target.checked);
+});
+
+toggleMacControls.addEventListener("change", (event) => {
+  applyMacControls(event.target.checked);
+  localStorage.setItem("qwley_shade_mac_controls", event.target.checked);
+});
+
+fontOptions.addEventListener("click", (event) => {
+  const button = event.target.closest(".font-option");
+  if (!button) return;
+  applyAppFont(button.dataset.font);
+  localStorage.setItem("qwley_shade_app_font", button.dataset.font);
+});
+
+btnResetInterface.addEventListener("click", () => {
+  [
+    "qwley_shade_custom_bg",
+    "qwley_shade_accent_color",
+    "qwley_shade_background_dim",
+    "qwley_shade_animations",
+    "qwley_shade_glass",
+    "qwley_shade_mac_controls",
+    "qwley_shade_app_font",
+    "qwley_shade_creator_theme",
+    "qwley_shade_changelog_visible",
+  ].forEach((key) => localStorage.removeItem(key));
+  updateBackground(null);
+  bgUrlInput.value = "";
+  applyAccentColor("#261f18");
+  applyBackgroundDim(35);
+  applyAnimations(true);
+  applyGlass(true);
+  applyMacControls(false);
+  applyAppFont("inter");
+  clearCreatorTheme();
+  toggleChangelogVisible.checked = true;
+  changelogBlock.hidden = false;
 });
 
 const savedChangelogVisible = localStorage.getItem("qwley_shade_changelog_visible");
@@ -1226,38 +2189,204 @@ toggleNotifications.addEventListener("change", (e) => {
   localStorage.setItem("qwley_shade_notifications", e.target.checked);
 });
 
+const overlayKeyButton = document.getElementById("btn-overlay-key");
+const overlayKeyFeedback = document.getElementById("overlay-key-feedback");
+const KEY_NAMES = {
+  8: "Backspace", 9: "Tab", 13: "Enter", 16: "Shift", 17: "Ctrl", 18: "Alt",
+  19: "Pause", 20: "Caps Lock", 27: "Esc", 32: "Space", 33: "Page Up",
+  34: "Page Down", 35: "End", 36: "Home", 37: "←", 38: "↑", 39: "→",
+  40: "↓", 45: "Insert", 46: "Delete", 91: "Win", 93: "Menu",
+  106: "Num *", 107: "Num +", 109: "Num -", 110: "Num .", 111: "Num /",
+  144: "Num Lock", 145: "Scroll Lock"
+};
+
+function keyName(code) {
+  if (KEY_NAMES[code]) return KEY_NAMES[code];
+  if (code >= 48 && code <= 90) return String.fromCharCode(code);
+  if (code >= 96 && code <= 105) return "Num " + (code - 96);
+  if (code >= 112 && code <= 123) return "F" + (code - 111);
+  return "VK " + code;
+}
+
+invoke("get_overlay_key")
+  .then((code) => { overlayKeyButton.textContent = keyName(Number(code) || 36); })
+  .catch(() => { overlayKeyButton.textContent = "Home"; });
+
+overlayKeyButton.addEventListener("click", () => {
+  overlayKeyButton.classList.add("is-listening");
+  overlayKeyButton.textContent = t("pressKey");
+  overlayKeyFeedback.textContent = t("escCancel");
+  const capture = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.key === "Escape") {
+      overlayKeyButton.classList.remove("is-listening");
+      const code = await invoke("get_overlay_key").catch(() => 36);
+      overlayKeyButton.textContent = keyName(Number(code) || 36);
+      overlayKeyFeedback.textContent = "";
+      return;
+    }
+    const code = Number(event.keyCode || event.which);
+    if (!code || code > 254) {
+      overlayKeyFeedback.textContent = t("unsupportedKey");
+      return;
+    }
+    try {
+      await invoke("set_overlay_key", { keyCode: code });
+      overlayKeyButton.textContent = keyName(code);
+      overlayKeyFeedback.textContent = t("overlayChanged", { key: keyName(code) });
+    } catch (err) {
+      overlayKeyFeedback.textContent = t("overlayFailed") + (err?.message || err);
+    } finally {
+      overlayKeyButton.classList.remove("is-listening");
+    }
+  };
+  window.addEventListener("keydown", capture, { once: true, capture: true });
+});
+
+// --- Overlay open key (Menu= in overlay_settings.ini) ---
+const menuKeyButton = document.getElementById("btn-menu-key");
+const menuKeyModifier = document.getElementById("menu-key-modifier");
+const menuKeyFeedback = document.getElementById("menu-key-feedback");
+
+function parseMenuKey(value) {
+  // value like "SHIFT+TAB" or "TAB"
+  const parts = value.trim().toUpperCase().split("+");
+  if (parts.length >= 2) {
+    return { modifier: parts[0], key: parts.slice(1).join("+") };
+  }
+  return { modifier: "", key: parts[0] };
+}
+
+invoke("get_menu_key")
+  .then((value) => {
+    const { modifier, key } = parseMenuKey(value);
+    menuKeyModifier.value = modifier;
+    menuKeyButton.textContent = key || "TAB";
+  })
+  .catch(() => {
+    menuKeyModifier.value = "SHIFT";
+    menuKeyButton.textContent = "TAB";
+  });
+
+menuKeyButton.addEventListener("click", () => {
+  menuKeyButton.classList.add("is-listening");
+  menuKeyButton.textContent = t("pressKey");
+  menuKeyFeedback.textContent = t("escCancel");
+  const capture = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.key === "Escape") {
+      menuKeyButton.classList.remove("is-listening");
+      const value = await invoke("get_menu_key").catch(() => "SHIFT+TAB");
+      const { modifier, key } = parseMenuKey(value);
+      menuKeyModifier.value = modifier;
+      menuKeyButton.textContent = key || "TAB";
+      menuKeyFeedback.textContent = "";
+      return;
+    }
+    // Build key name from the event
+    const keyStr = event.key.length === 1 ? event.key.toUpperCase() : event.code.replace(/^Key|^Digit/, "") || event.key.toUpperCase();
+    const modifier = menuKeyModifier.value;
+    try {
+      await invoke("set_menu_key", { modifier, key: keyStr });
+      menuKeyButton.textContent = keyStr;
+      const combo = modifier ? modifier + "+" + keyStr : keyStr;
+      menuKeyFeedback.textContent = t("menuKeyChanged", { key: combo });
+    } catch (err) {
+      menuKeyFeedback.textContent = t("menuKeyFailed") + (err?.message || err);
+    } finally {
+      menuKeyButton.classList.remove("is-listening");
+    }
+  };
+  window.addEventListener("keydown", capture, { once: true, capture: true });
+});
+
+menuKeyModifier.addEventListener("change", async () => {
+  // When modifier changes, save with current key
+  const key = menuKeyButton.textContent;
+  if (!key || key === t("pressKey")) return;
+  const modifier = menuKeyModifier.value;
+  try {
+    await invoke("set_menu_key", { modifier, key });
+    const combo = modifier ? modifier + "+" + key : key;
+    menuKeyFeedback.textContent = t("menuKeyChanged", { key: combo });
+  } catch (err) {
+    menuKeyFeedback.textContent = t("menuKeyFailed") + (err?.message || err);
+  }
+});
+
+document.querySelectorAll(".external-link").forEach((link) => {
+  link.addEventListener("click", async (event) => {
+    if (!TAURI) return;
+    event.preventDefault();
+    try { await invoke("open_external", { url: link.dataset.url }); } catch (_) {}
+  });
+});
+
 const loadingScreen = document.getElementById("loading-screen");
 const loadingBarFill = document.getElementById("loading-bar-fill");
 const loadingPercent = document.getElementById("loading-percent");
 let loadingProgress = 0;
-let loadingDone = false;
+let loadingTimer = window.setInterval(() => {
+  const step = loadingProgress < 45 ? 3 : loadingProgress < 75 ? 1 : 0.25;
+  loadingProgress = Math.min(92, loadingProgress + step);
+  loadingBarFill.style.width = loadingProgress + "%";
+  loadingPercent.textContent = Math.floor(loadingProgress) + "%";
+}, 55);
 
-function animateLoading(target) {
-  const step = () => {
-    if (loadingProgress < target) {
-      loadingProgress = Math.min(loadingProgress + 2, target);
+function completeLoadingBar(duration = 380) {
+  const start = performance.now();
+  const from = loadingProgress;
+  return new Promise((resolve) => {
+    const frame = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      loadingProgress = from + (100 - from) * eased;
       loadingBarFill.style.width = loadingProgress + "%";
-      loadingPercent.textContent = loadingProgress + "%";
-      if (loadingProgress < target) requestAnimationFrame(step);
-    }
-  };
-  step();
+      loadingPercent.textContent = Math.floor(loadingProgress) + "%";
+      if (t < 1) requestAnimationFrame(frame);
+      else resolve();
+    };
+    requestAnimationFrame(frame);
+  });
 }
 
-function finishLoading() {
-  loadingDone = true;
-  animateLoading(100);
-  setTimeout(() => {
-    loadingScreen.classList.add("fade-out");
-    setTimeout(() => { loadingScreen.remove(); }, 600);
-  }, 400);
+async function finishLoading() {
+  clearInterval(loadingTimer);
+  await completeLoadingBar();
+  loadingPercent.textContent = "100%";
+  await new Promise((resolve) => setTimeout(resolve, 180));
+  loadingScreen.classList.add("fade-out");
+  setTimeout(() => { loadingScreen.remove(); }, 600);
 }
-
-animateLoading(30);
 
 const colorSwatches = document.querySelectorAll(".color-swatch");
 const colorCustom = document.getElementById("color-custom");
+const creatorThemeButtons = document.querySelectorAll(".creator-theme");
 const root = document.documentElement;
+const CREATOR_THEMES = {
+  neon: {
+    bg: "#071313", dim: "#9fd8d0", accentStart: "#eafffb",
+    accentEnd: "#45e5d1", pill: "#0b5e59", pillText: "#edfffc",
+  },
+  mono: {
+    bg: "#101010", dim: "#bdbdbd", accentStart: "#ffffff",
+    accentEnd: "#969696", pill: "#353535", pillText: "#ffffff",
+  },
+  gold: {
+    bg: "#171207", dim: "#d7c28e", accentStart: "#fff6d6",
+    accentEnd: "#e4b63f", pill: "#9f7418", pillText: "#fff7dc",
+  },
+  crimson: {
+    bg: "#16090b", dim: "#d9a6ad", accentStart: "#ffe8eb",
+    accentEnd: "#ff6277", pill: "#630f1d", pillText: "#fff0f2",
+  },
+  lime: {
+    bg: "#131505", dim: "#d3dc93", accentStart: "#f9ffd5",
+    accentEnd: "#d7ea28", pill: "#707a00", pillText: "#fbffd9",
+  },
+};
 
 function applyAccentColor(hex) {
   root.style.setProperty("--pill-blue", hex);
@@ -1267,21 +2396,60 @@ function applyAccentColor(hex) {
   });
 }
 
+function clearCreatorTheme() {
+  root.style.setProperty("--bg", "#141414");
+  root.style.setProperty("--text-dim", "#c0c0c8");
+  root.style.setProperty("--accent-start", "#ffffff");
+  root.style.setProperty("--accent-end", "#8c8c94");
+  root.style.setProperty("--pill-text", "#f2ece4");
+  creatorThemeButtons.forEach((button) => button.classList.remove("active"));
+  localStorage.removeItem("qwley_shade_creator_theme");
+}
+
+function applyCreatorTheme(themeId) {
+  const theme = CREATOR_THEMES[themeId];
+  if (!theme) {
+    clearCreatorTheme();
+    return;
+  }
+  root.style.setProperty("--bg", theme.bg);
+  root.style.setProperty("--text-dim", theme.dim);
+  root.style.setProperty("--accent-start", theme.accentStart);
+  root.style.setProperty("--accent-end", theme.accentEnd);
+  root.style.setProperty("--pill-text", theme.pillText);
+  applyAccentColor(theme.pill);
+  creatorThemeButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.theme === themeId);
+  });
+  localStorage.setItem("qwley_shade_creator_theme", themeId);
+}
+
 const savedColor = localStorage.getItem("qwley_shade_accent_color");
 if (savedColor) applyAccentColor(savedColor);
+const savedCreatorTheme = localStorage.getItem("qwley_shade_creator_theme");
+if (savedCreatorTheme) applyCreatorTheme(savedCreatorTheme);
 
 colorSwatches.forEach(swatch => {
   swatch.addEventListener("click", () => {
     const c = swatch.dataset.color;
+    clearCreatorTheme();
     applyAccentColor(c);
     localStorage.setItem("qwley_shade_accent_color", c);
   });
 });
 
 colorCustom.addEventListener("input", (e) => {
+  clearCreatorTheme();
   applyAccentColor(e.target.value);
   localStorage.setItem("qwley_shade_accent_color", e.target.value);
   colorSwatches.forEach(s => s.classList.remove("active"));
+});
+
+creatorThemeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    applyCreatorTheme(button.dataset.theme);
+    localStorage.removeItem("qwley_shade_accent_color");
+  });
 });
 
 requestAnimationFrame(() => setActiveView("home"));
@@ -1320,8 +2488,8 @@ function showUpdateNotification(ver) {
   try {
     if (typeof Notification === "undefined") return;
     const fire = () => {
-      const n = new Notification("Qwley Shade — update available", {
-        body: `Version v${ver} is out. Open the Update tab to install.`,
+      const n = new Notification(t("updateAvailableTitle"), {
+        body: t("updateAvailableBody", { version: ver }),
       });
       n.onclick = () => setActiveView("update");
     };
@@ -1353,7 +2521,7 @@ let installing = false;
 
 async function runCheck(attempt = 0) {
   btnPlay.hidden = true;
-  setStatus("Checking for updates…");
+  setStatus(t("checking"));
   setProgress(0, 0, 0);
 
   try {
@@ -1363,8 +2531,8 @@ async function runCheck(attempt = 0) {
     handleUpdateAvailable(result);
 
     if (!result.installed) {
-      setStatus("QWLEY SHADE folder not found — downloading…");
-      await doInstall(true);
+      setStatus(t("folderMissing"));
+      await doInstall();
       return;
     }
 
@@ -1372,37 +2540,44 @@ async function runCheck(attempt = 0) {
     progressPercent.textContent = "100%";
     btnPlay.hidden = false;
     if (result.needs_update) {
-      setStatus("New version available — open the Update tab to install");
+      setStatus(t("newVersion"));
     } else {
-      setStatus("You are on the latest version");
+      setStatus(t("latestVersion"));
     }
   } catch (err) {
     if (attempt < 2) {
-      setStatus("Checking for updates… (retry " + (attempt + 1) + ")");
+      setStatus(t("retryCheck", { attempt: attempt + 1 }));
       setTimeout(() => runCheck(attempt + 1), 2500);
       return;
     }
-    setStatus("Failed to check for updates [" + (err && err.message ? err.message : err) + "]");
+    setStatus(t("checkFailed", { error: err && err.message ? err.message : err }));
   }
 }
 
-async function doInstall(launchReShade = false) {
+async function doInstall() {
   if (installing) return;
   installing = true;
   btnPlay.hidden = true;
   btnInstallUpdate.disabled = true;
   const prevLabel = btnInstallUpdate.textContent;
-  btnInstallUpdate.textContent = "Installing…";
-  setStatus("Downloading QWLEY SHADE…");
-  setUpdateStatus("Downloading QWLEY SHADE…");
+  btnInstallUpdate.textContent = t("installing");
+  setStatus(t("downloading"));
+  setUpdateStatus(t("downloading"));
   try {
-    await invoke("start_update", { launchReshade: launchReShade === true });
-    setStatus("Installation complete — press Launch to play");
-    setUpdateStatus("Installation complete.");
+    await invoke("start_update");
+    setStatus(t("installCompleteHome"));
+    setUpdateStatus(t("installComplete"));
     if (lastCheckInfo) {
       localStorage.setItem("qwley_shade_seen_update", cleanVersion(lastCheckInfo.remote));
     }
     setUpdateDot(false);
+    // Save current repo SHAs so content-update dot doesn't reappear
+    if (lastRepoStatus) {
+      invoke("mark_repos_seen", {
+        gameSha: lastRepoStatus.game_sha,
+        reshadeSha: lastRepoStatus.reshade_sha
+      }).catch(() => {});
+    }
     progressBar.style.width = "100%";
     progressPercent.textContent = "100%";
     btnPlay.hidden = false;
@@ -1413,8 +2588,8 @@ async function doInstall(launchReShade = false) {
     } catch (_) {}
   } catch (err) {
     const msg = err && err.message ? err.message : err;
-    setStatus("Install error: " + msg);
-    setUpdateStatus("Install error: " + msg);
+    setStatus(t("installError") + msg);
+    setUpdateStatus(t("installError") + msg);
   } finally {
     installing = false;
     btnInstallUpdate.disabled = false;
@@ -1424,22 +2599,53 @@ async function doInstall(launchReShade = false) {
 
 async function doLaunch() {
   btnPlay.hidden = true;
-  setStatus("Launching QWLEY SHADE… (eurotrucks2 in 10s)");
+  setStatus(t("launching"));
   try {
     await invoke("launch_game");
-    setStatus("Game launched");
+    setStatus(t("gameLaunched"));
     btnPlay.hidden = false;
   } catch (err) {
-    setStatus("Launch error: " + (err && err.message ? err.message : err));
+    setStatus(t("launchError") + (err && err.message ? err.message : err));
     btnPlay.hidden = false;
   }
 }
 
 listen("download-progress", (e) => setProgress(e.payload.percent, e.payload.downloaded, e.payload.total));
-listen("download-complete", () => setStatus("Ready — launching ReShade setup…"));
+listen("download-complete", () => setStatus(t("ready")));
+
+// --- Repo content monitoring ---
+let lastRepoStatus = null;
+
+async function checkRepoUpdates() {
+  try {
+    const status = await invoke("check_repo_updates");
+    lastRepoStatus = status;
+    if (status.has_new_content) {
+      setUpdateDot(true);
+    }
+  } catch (_) {}
+}
+
+// Run on startup and every 10 minutes
+checkRepoUpdates();
+setInterval(checkRepoUpdates, 10 * 60 * 1000);
+
+// Patch doInstall to also mark repos as seen after successful update
+const _origDoInstall = doInstall;
 
 btnPlay.addEventListener("click", doLaunch);
-btnInstallUpdate.addEventListener("click", () => doInstall());
+btnInstallUpdate.addEventListener("click", async () => {
+  await doInstall();
+  // After install, save current repo SHAs so dot disappears
+  if (lastRepoStatus) {
+    try {
+      await invoke("mark_repos_seen", {
+        gameSha: lastRepoStatus.game_sha,
+        reshadeSha: lastRepoStatus.reshade_sha
+      });
+    } catch (_) {}
+  }
+});
 
 document.getElementById("btn-reset-overlay").addEventListener("click", async () => {
   try { await invoke("reset_overlay"); } catch (err) { /* no-op */ }
@@ -1450,8 +2656,10 @@ document.getElementById("btn-close-x").addEventListener("click", async () => {
 });
 
 document.getElementById("btn-min").addEventListener("click", () => getCurrentWindow().minimize());
+document.getElementById("btn-max").addEventListener("click", () => getCurrentWindow().toggleMaximize());
 document.getElementById("btn-close").addEventListener("click", () => getCurrentWindow().close());
 
+applyLanguage();
 Promise.all([runCheck(), loadChangelog()]).finally(finishLoading);
   </script>
 </body>

@@ -1,10 +1,10 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Qwley Shade",
-  "version": "1.0.7",
+  "version": "1.0.11",
   "identifier": "app.qwley.shade",
   "build": {
-    "frontendDist": "../dist"
+    "frontendDist": "./dist"
   },
   "app": {
     "withGlobalTauri": true,
